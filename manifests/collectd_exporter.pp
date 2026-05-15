@@ -14,7 +14,7 @@
 # @param group
 #  Group under which the binary is running
 # @param init_style
-#  Service startup scripts style (e.g. rc, upstart or systemd)
+#  Service startup scripts style (e.g. rc or systemd)
 # @param install_method
 #  Installation method: url or package (only url is supported currently)
 # @param manage_group
@@ -55,7 +55,8 @@ class prometheus::collectd_exporter (
   String[1] $package_name                                    = 'collectd_exporter',
   String[1] $service_name                                    = 'collectd_exporter',
   String[1] $user                                            = 'collectd-exporter',
-  String[1] $version                                         = '0.5.0',
+  # renovate: depName=prometheus/collectd_exporter
+  String[1] $version                                         = '0.7.0',
   String $options                                            = '', # lint:ignore:params_empty_string_assignment
   String[1] $os                                              = downcase($facts['kernel']),
   Prometheus::Initstyle $init_style                          = $prometheus::init_style,

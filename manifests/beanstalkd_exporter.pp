@@ -24,7 +24,7 @@
 # @param group
 #  Group under which the binary is running
 # @param init_style
-#  Service startup scripts style (e.g. rc, upstart or systemd)
+#  Service startup scripts style (e.g. rc or systemd)
 # @param install_method
 #  Installation method: url or package (only url is supported currently)
 # @param manage_group
@@ -58,19 +58,20 @@
 # @param proxy_type
 #  Optional proxy server type (none|http|https|ftp)
 class prometheus::beanstalkd_exporter (
-  String $download_extension,
-  Prometheus::Uri $download_url_base,
-  Array $extra_groups,
-  String[1] $group,
-  String[1] $package_ensure,
-  String[1] $package_name,
-  String[1] $service_name,
-  String[1] $user,
-  String[1] $version,
-  String[1] $config,
-  String[1] $mapping_config,
-  String[1] $beanstalkd_address,
-  String[1] $exporter_listen,
+  String[0] $download_extension = '', # lint:ignore:params_empty_string_assignment
+  Prometheus::Uri $download_url_base = 'https://github.com/messagebird/beanstalkd_exporter/releases',
+  Array $extra_groups = [],
+  String[1] $group = 'beanstalkd-exporter',
+  String[1] $package_ensure = 'latest',
+  String[1] $package_name = 'beanstalkd_exporter',
+  String[1] $service_name = 'beanstalkd_exporter',
+  String[1] $user = 'beanstalkd-exporter',
+  Stdlib::Absolutepath $config = '/etc/beanstalkd-exporter.conf',
+  Stdlib::Absolutepath $mapping_config = '/etc/beanstalkd-exporter-mapping.conf',
+  String[1] $beanstalkd_address = '127.0.0.1:11300',
+  String[1] $exporter_listen = ':9371',
+  # renovate: depName=messagebird/beanstalkd_exporter
+  String[1] $version                                         = '1.0.5',
   Boolean $purge_config_dir                                  = true,
   Boolean $restart_on_change                                 = true,
   Boolean $service_enable                                    = true,
@@ -82,7 +83,7 @@ class prometheus::beanstalkd_exporter (
   Boolean $manage_user                                       = true,
   String[1] $os                                              = downcase($facts['kernel']),
   Optional[String[1]] $extra_options                         = undef,
-  Variant[Undef,String] $download_url                        = undef,
+  Optional[String] $download_url                             = undef,
   String[1] $arch                                            = $prometheus::real_arch,
   Stdlib::Absolutepath $bin_dir                              = $prometheus::bin_dir,
   Boolean $export_scrape_job                                 = false,
@@ -112,15 +113,15 @@ class prometheus::beanstalkd_exporter (
   file { $config:
     ensure  => $real_file_ensure,
     content => $beanstalkd_address,
-    before  => Prometheus::Daemon['beanstalkd_exporter'],
+    before  => Prometheus::Daemon[$service_name],
   }
 
   file { $mapping_config:
     ensure => $real_file_ensure,
-    before => Prometheus::Daemon['beanstalkd_exporter'],
+    before => Prometheus::Daemon[$service_name],
   }
 
-  prometheus::daemon { 'beanstalkd_exporter':
+  prometheus::daemon { $service_name:
     install_method     => $install_method,
     version            => $version,
     download_extension => $download_extension,

@@ -16,7 +16,7 @@
 # @param group
 #  Group under which the binary is running
 # @param init_style
-#  Service startup scripts style (e.g. rc, upstart or systemd)
+#  Service startup scripts style (e.g. rc or systemd)
 # @param install_method
 #  Installation method: url or package (only url is supported currently)
 # @param manage_group
@@ -59,6 +59,7 @@ class prometheus::puppetdb_exporter (
   String[1] $package_ensure                                  = 'present',
   String[1] $package_name                                    = 'puppetdb_exporter',
   String[1] $user                                            = 'puppetdb-exporter',
+  # renovate: depName=camptocamp/prometheus-puppetdb-exporter
   String[1] $version                                         = '1.1.0',
   Boolean $purge_config_dir                                  = true,
   Boolean $restart_on_change                                 = true,

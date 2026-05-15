@@ -10,12 +10,14 @@ describe 'prometheus::ipmi_exporter' do
       end
 
       context 'without parameters' do
+        let(:version) { catalogue.resource('Class[prometheus::ipmi_exporter]').parameters[:version] }
+
         it { is_expected.to compile.with_all_deps }
         it { is_expected.to contain_class('prometheus') }
         it { is_expected.to contain_service('ipmi_exporter') }
         it { is_expected.to contain_user('ipmi-exporter') }
         it { is_expected.to contain_group('ipmi-exporter') }
-        it { is_expected.to contain_file('/opt/ipmi_exporter-1.4.0.linux-amd64/ipmi_exporter') }
+        it { is_expected.to contain_file("/opt/ipmi_exporter-#{version}.linux-amd64/ipmi_exporter") }
         it { is_expected.to contain_file('/usr/local/bin/ipmi_exporter') }
 
         if facts[:os]['name'] == 'Archlinux'
@@ -37,7 +39,7 @@ describe 'prometheus::ipmi_exporter' do
           {
             modules: { 'default' => { 'collectors' => ['bmc'] } },
             install_method: 'url',
-            version: '1.3.1'
+            version: '1.3.1',
           }
         end
 
@@ -51,14 +53,13 @@ describe 'prometheus::ipmi_exporter' do
         else
           it { is_expected.to contain_prometheus__daemon('ipmi_exporter').with(options: '--config.file=/etc/ipmi_exporter.yaml  --freeipmi.path=/usr/local/bin') }
         end
-        it do
-          verify_contents(catalogue, '/etc/ipmi_exporter.yaml', [
-                            'modules:',
-                            '  default:',
-                            '    collectors:',
-                            '    - bmc',
-                          ])
-        end
+        it {
+          is_expected.to contain_file('/etc/ipmi_exporter.yaml')
+            .with_content(%r{^modules:\n})
+            .with_content(%r{^  default:\n})
+            .with_content(%r{^    collectors:\n})
+            .with_content(%r{^    - bmc\n})
+        }
       end
 
       context 'with version specified' do
@@ -68,7 +69,7 @@ describe 'prometheus::ipmi_exporter' do
             arch: 'amd64',
             os: 'linux',
             bin_dir: '/usr/local/bin',
-            install_method: 'url'
+            install_method: 'url',
           }
         end
 
@@ -84,7 +85,7 @@ describe 'prometheus::ipmi_exporter' do
       context 'with extra options' do
         let(:params) do
           {
-            extra_options: '--path.procfs /host/proc --path.sysfs /host/sys'
+            extra_options: '--path.procfs /host/proc --path.sysfs /host/sys',
           }
         end
 

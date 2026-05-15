@@ -16,7 +16,7 @@
 # @param group
 #  Group under which the binary is running
 # @param init_style
-#  Service startup scripts style (e.g. rc, upstart or systemd)
+#  Service startup scripts style (e.g. rc or systemd)
 # @param install_method
 #  Installation method: url or package (only url is supported currently)
 # @param manage_group
@@ -93,6 +93,7 @@ class prometheus::sachet (
   String[1] $package_ensure                                  = 'latest',
   String[1] $package_name                                    = 'sachet',
   String[1] $user                                            = 'sachet',
+  # renovate: depName=messagebird/sachet
   String[1] $version                                         = '0.2.6',
   Array $receivers                                           = [],
   Hash $providers                                            = {},
@@ -160,9 +161,9 @@ class prometheus::sachet (
     group   => $group,
     mode    => $config_mode,
     content => epp('prometheus/sachet.yaml.epp', {
-        'templates' => $templates.map |$template| { "${template_dir}/${template[name]}.tmpl" },
-        'receivers' => $receivers,
-        'providers' => $providers
+      'templates' => $templates.map |$template| { "${template_dir}/${template[name]}.tmpl" },
+      'receivers' => $receivers,
+      'providers' => $providers
     }),
     notify  => $notify_service,
     require => File[$config_dir],

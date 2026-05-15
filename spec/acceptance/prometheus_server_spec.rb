@@ -45,6 +45,23 @@ describe 'prometheus server basics' do
     end
   end
 
+  if host_inventory['facter']['os']['name'] == 'Archlinux'
+    # Archlinux ships promethes >= 3.0.0
+    it 'can access static files' do
+      shell('curl -s http://127.0.0.1:9090/query') do |r|
+        expect(r.stdout).to match(%r{doctype html})
+        expect(r.exit_code).to eq(0)
+      end
+    end
+  else
+    it 'can access static files' do
+      shell('curl -s http://127.0.0.1:9090/graph') do |r|
+        expect(r.stdout).to match(%r{doctype html})
+        expect(r.exit_code).to eq(0)
+      end
+    end
+  end
+
   describe 'updating configuration to enable Admin API' do
     it 'prometheus server via main class works idempotently with no errors' do
       pp = "class{'prometheus': manage_prometheus_server => true, web_enable_admin_api => true }"
@@ -64,7 +81,7 @@ describe 'prometheus server basics' do
 
   describe 'prometheus server with options' do
     it 'is idempotent' do
-      pp = "class{'prometheus::server': version => '2.4.3', external_url => '/test'}"
+      pp = "class{'prometheus::server': version => '2.52.0', external_url => '/test'}"
       # Run it twice and test for idempotency
       apply_manifest(pp, catch_failures: true)
       apply_manifest(pp, catch_changes: true)
@@ -84,7 +101,7 @@ describe 'prometheus server basics' do
     it 'is idempotent' do
       pp = <<-EOS
     class { 'prometheus::server':
-      version => '2.4.3',
+      version => '2.52.0',
       alerts => {
         'groups' => [
           {

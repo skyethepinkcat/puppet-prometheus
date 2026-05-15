@@ -13,8 +13,8 @@ describe 'prometheus::php_fpm_exporter' do
         it { is_expected.to compile.with_all_deps }
         it { is_expected.to contain_systemd__unit_file('php-fpm_exporter.service') }
         it { is_expected.not_to contain_package('php-fpm_exporter') }
-        it { is_expected.to contain_archive('/tmp/php-fpm_exporter-2.0.4.tar.gz') }
-        it { is_expected.to contain_file('/opt/php-fpm_exporter-2.0.4.linux-amd64') }
+        it { is_expected.to contain_archive('/tmp/php-fpm_exporter-2.2.0.tar.gz') }
+        it { is_expected.to contain_file('/opt/php-fpm_exporter-2.2.0.linux-amd64') }
       end
 
       context 'with some params' do
@@ -23,13 +23,13 @@ describe 'prometheus::php_fpm_exporter' do
             arch: 'amd64',
             os: 'linux',
             bin_dir: '/usr/local/bin',
-            install_method: 'url'
+            install_method: 'url',
           }
         end
 
         describe 'with specific params' do
           it { is_expected.to compile.with_all_deps }
-          it { is_expected.to contain_archive('/tmp/php-fpm_exporter-2.0.4.tar.gz') }
+          it { is_expected.to contain_archive('/tmp/php-fpm_exporter-2.2.0.tar.gz') }
           it { is_expected.to contain_class('prometheus') }
           it { is_expected.to contain_group('php-fpm_exporter') }
           it { is_expected.to contain_user('php-fpm_exporter') }
@@ -38,8 +38,8 @@ describe 'prometheus::php_fpm_exporter' do
         end
 
         describe 'install correct binary' do
-          it { is_expected.to contain_file('/usr/local/bin/php-fpm_exporter').with('target' => '/opt/php-fpm_exporter-2.0.4.linux-amd64/php-fpm_exporter') }
-          it { is_expected.to contain_file('/opt/php-fpm_exporter-2.0.4.linux-amd64') }
+          it { is_expected.to contain_file('/usr/local/bin/php-fpm_exporter').with('target' => '/opt/php-fpm_exporter-2.2.0.linux-amd64/php-fpm_exporter') }
+          it { is_expected.to contain_file('/opt/php-fpm_exporter-2.2.0.linux-amd64') }
         end
       end
 
@@ -51,13 +51,13 @@ describe 'prometheus::php_fpm_exporter' do
             arch: 'amd64',
             os: 'linux',
             bin_dir: '/usr/local/bin',
-            install_method: 'url'
+            install_method: 'url',
           }
         end
 
         describe 'with specific params' do
           it { is_expected.to compile.with_all_deps }
-          it { is_expected.to contain_archive('/tmp/php-fpm_exporter-2.0.4.tar.gz') }
+          it { is_expected.to contain_archive('/tmp/php-fpm_exporter-2.2.0.tar.gz') }
           it { is_expected.to contain_class('prometheus') }
           it { is_expected.to contain_group('php-fpm_exporter') }
           it { is_expected.to contain_user('php-fpm_exporter') }
@@ -66,8 +66,8 @@ describe 'prometheus::php_fpm_exporter' do
         end
 
         describe 'install correct binary' do
-          it { is_expected.to contain_file('/usr/local/bin/php-fpm_exporter').with('target' => '/opt/php-fpm_exporter-2.0.4.linux-amd64/php-fpm_exporter') }
-          it { is_expected.to contain_file('/opt/php-fpm_exporter-2.0.4.linux-amd64') }
+          it { is_expected.to contain_file('/usr/local/bin/php-fpm_exporter').with('target' => '/opt/php-fpm_exporter-2.2.0.linux-amd64/php-fpm_exporter') }
+          it { is_expected.to contain_file('/opt/php-fpm_exporter-2.2.0.linux-amd64') }
         end
       end
     end

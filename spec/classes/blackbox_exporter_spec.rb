@@ -19,9 +19,9 @@ describe 'prometheus::blackbox_exporter' do
             install_method: 'url',
             modules: {
               'http_2xx' => {
-                'prober' => 'http'
-              }
-            }
+                'prober' => 'http',
+              },
+            },
           }
         end
 
@@ -37,8 +37,11 @@ describe 'prometheus::blackbox_exporter' do
           it { is_expected.to contain_file('/opt/blackbox_exporter-0.6.0.linux-amd64/blackbox_exporter') }
 
           it {
-            expect(subject).to contain_file('/etc/blackbox-exporter.yaml')
-            verify_contents(catalogue, '/etc/blackbox-exporter.yaml', ['---', 'modules:', '  http_2xx:', '    prober: http'])
+            is_expected.to contain_file('/etc/blackbox-exporter.yaml')
+              .with_content(%r{^---\n})
+              .with_content(%r{^modules:\n})
+              .with_content(%r{^  http_2xx:\n})
+              .with_content(%r{^    prober: http\n})
           }
         end
 
@@ -48,9 +51,9 @@ describe 'prometheus::blackbox_exporter' do
               web_config_content: {
                 tls_server_config: {
                   cert_file: '/etc/blackbox_exporter/foo.cert',
-                  key_file: '/etc/blackbox_exporter/foo.key'
-                }
-              }
+                  key_file: '/etc/blackbox_exporter/foo.key',
+                },
+              },
             }
           end
 
@@ -58,6 +61,20 @@ describe 'prometheus::blackbox_exporter' do
           it { is_expected.to contain_file('/etc/blackbox_exporter_web-config.yml').with(ensure: 'file') }
           it { is_expected.to contain_prometheus__daemon('blackbox_exporter').with(options: '--config.file=/etc/blackbox-exporter.yaml --web.config.file=/etc/blackbox_exporter_web-config.yml') }
         end
+      end
+
+      context 'with env vars' do
+        let :params do
+          {
+            env_vars: {
+              blub: 'foobar',
+            },
+            env_file_path: '/cows',
+          }
+        end
+
+        it { is_expected.to compile.with_all_deps }
+        it { is_expected.to contain_prometheus__daemon('blackbox_exporter').with({ env_vars: { 'blub' => 'foobar' }, env_file_path: '/cows' }) }
       end
     end
   end

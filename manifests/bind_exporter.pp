@@ -31,7 +31,7 @@
 #  Group under which the binary is running
 #
 # @param init_style
-#  Service startup scripts style (e.g. rc, upstart or systemd)
+#  Service startup scripts style (e.g. rc or systemd)
 #
 # @param install_method
 #  Installation method: url or package (only url is supported currently)
@@ -101,7 +101,8 @@ class prometheus::bind_exporter (
   String[1] $package_ensure                                  = 'latest',
   String[1] $package_name                                    = 'bind_exporter',
   String[1] $user                                            = 'bind-exporter',
-  String[1] $version                                         = '0.4.0',
+  # renovate: depName=prometheus-community/bind_exporter
+  String[1] $version                                         = '0.8.0',
   Boolean $purge_config_dir                                  = true,
   Boolean $restart_on_change                                 = true,
   Boolean $service_enable                                    = true,

@@ -21,6 +21,7 @@ class prometheus::server (
   Hash $global_config                                                           = $prometheus::global_config,
   Array $rule_files                                                             = $prometheus::rule_files,
   Array $scrape_configs                                                         = $prometheus::scrape_configs,
+  Optional[Array] $scrape_config_files                                          = $prometheus::scrape_config_files,
   Boolean $include_default_scrape_configs                                       = $prometheus::include_default_scrape_configs,
   Array $remote_read_configs                                                    = $prometheus::remote_read_configs,
   Array $remote_write_configs                                                   = $prometheus::remote_write_configs,
@@ -57,13 +58,8 @@ class prometheus::server (
   Optional[Enum['none', 'http', 'https', 'ftp']] $proxy_type                    = $prometheus::proxy_type,
   Boolean $manage_init_file                                                     = $prometheus::manage_init_file,
 ) inherits prometheus {
-  if( versioncmp($version, '1.0.0') == -1 ) {
-    $real_download_url = pick($download_url,
-    "${download_url_base}/download/${version}/${package_name}-${version}.${os}-${arch}.${download_extension}")
-  } else {
-    $real_download_url = pick($download_url,
-    "${download_url_base}/download/v${version}/${package_name}-${version}.${os}-${arch}.${download_extension}")
-  }
+  $real_download_url = pick($download_url,
+  "${download_url_base}/download/v${version}/${package_name}-${version}.${os}-${arch}.${download_extension}")
   $notify_service = $restart_on_change ? {
     true    => Service[$service_name],
     default => undef,

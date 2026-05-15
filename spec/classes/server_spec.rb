@@ -9,7 +9,7 @@ describe 'prometheus::server' do
         facts.merge(os_specific_facts(facts))
       end
 
-      parameters = { version: '2.0.0-rc.1', bin_dir: '/usr/local/bin', install_method: 'url', init_style: 'systemd', configname: 'prometheus.yaml' }
+      parameters = { version: '2.52.0', bin_dir: '/usr/local/bin', install_method: 'url', init_style: 'systemd', configname: 'prometheus.yaml' }
 
       context "with parameters #{parameters}" do
         let(:params) do
@@ -23,7 +23,7 @@ describe 'prometheus::server' do
 
           it {
             expect(subject).to contain_systemd__unit_file('prometheus.service').with(
-              'content' => File.read(fixtures('files', "prometheus#{prom_major}.systemd"))
+              'content' => File.read(File.join('spec', 'fixtures', 'files', "prometheus#{prom_major}.systemd")),
             )
           }
         end
@@ -42,6 +42,27 @@ describe 'prometheus::server' do
             content = catalogue.resource('file', 'prometheus.yaml').send(:parameters)[:content]
             expect(content).not_to include('job_name: prometheus')
           }
+        end
+
+        describe 'scrape_config_files' do
+          context 'by default' do
+            it {
+              content = catalogue.resource('file', 'prometheus.yaml').send(:parameters)[:content]
+              expect(content).not_to include('scrape_config_files:')
+            }
+          end
+
+          context 'when set with a glob' do
+            let(:params) do
+              super().merge(scrape_config_files: ['/etc/prometheus/scrape_configs.d/*.yaml'])
+            end
+
+            it {
+              content = catalogue.resource('file', 'prometheus.yaml').send(:parameters)[:content]
+              expect(content).to include('scrape_config_files:')
+              expect(content).to include('- "/etc/prometheus/scrape_configs.d/*.yaml"')
+            }
+          end
         end
 
         describe 'max_open_files', if: facts[:os]['name'] != 'Archlinux' do

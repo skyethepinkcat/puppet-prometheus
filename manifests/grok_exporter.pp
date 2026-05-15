@@ -23,7 +23,7 @@
 # @param group
 #  Group under which the binary is running
 # @param init_style
-#  Service startup scripts style (e.g. rc, upstart or systemd)
+#  Service startup scripts style (e.g. rc or systemd)
 # @param install_method
 #  Installation method: url or package (only url is supported currently)
 # @param manage_group
@@ -66,6 +66,7 @@ class prometheus::grok_exporter (
   String[1] $package_ensure                                  = 'latest',
   String[1] $package_name                                    = 'grok_exporter',
   String[1] $user                                            = 'grok-exporter',
+  # renovate: depName=fstab/grok_exporter
   String[1] $version                                         = '1.0.0.RC4',
   Boolean $purge_config_dir                                  = true,
   Boolean $restart_on_change                                 = true,

@@ -18,13 +18,13 @@ describe 'prometheus::postgres_exporter' do
             bin_dir: '/usr/local/bin',
             install_method: 'url',
             postgres_user: 'username',
-            postgres_pass: 'password'
+            postgres_pass: 'password',
           }
         end
 
         describe 'with all defaults' do
           it { is_expected.to compile.with_all_deps }
-          it { is_expected.to contain_file('/usr/local/bin/postgres_exporter').with('target' => '/opt/postgres_exporter-0.4.6.linux-amd64/postgres_exporter') }
+          it { is_expected.to contain_file('/usr/local/bin/postgres_exporter').with('target' => '/opt/postgres_exporter_v0.4.6_linux-amd64/postgres_exporter') }
           it { is_expected.to contain_prometheus__daemon('postgres_exporter') }
           it { is_expected.to contain_user('postgres-exporter') }
           it { is_expected.to contain_group('postgres-exporter') }
@@ -37,9 +37,9 @@ describe 'prometheus::postgres_exporter' do
               web_config_content: {
                 tls_server_config: {
                   cert_file: '/etc/postgres_exporter/foo.cert',
-                  key_file: '/etc/postgres_exporter/foo.key'
-                }
-              }
+                  key_file: '/etc/postgres_exporter/foo.key',
+                },
+              },
             )
           end
 

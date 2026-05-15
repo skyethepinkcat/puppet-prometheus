@@ -20,7 +20,7 @@
 # @param group
 #  Group under which the binary is running
 # @param init_style
-#  Service startup scripts style (e.g. rc, upstart or systemd)
+#  Service startup scripts style (e.g. rc or systemd)
 # @param install_method
 #  Installation method: url or package (only url is supported currently)
 # @param manage_group
@@ -61,7 +61,8 @@ class prometheus::ipmi_exporter (
   Stdlib::Absolutepath $config_file                          = '/etc/ipmi_exporter.yaml',
   String[1] $package_name                                    = 'ipmi_exporter',
   String $download_extension                                 = 'tar.gz',
-  String[1] $version                                         = '1.4.0',
+  # renovate: depName=prometheus-community/ipmi_exporter
+  String[1] $version                                         = '1.10.1',
   String[1] $package_ensure                                  = 'latest',
   String[1] $user                                            = 'ipmi-exporter',
   String[1] $group                                           = 'ipmi-exporter',
@@ -127,13 +128,13 @@ class prometheus::ipmi_exporter (
     sudo::conf { $service_name:
       ensure         => 'present',
       content        => join([
-          "${user} ALL = NOPASSWD: /usr/sbin/ipmimonitoring",
-          "${user} ALL = NOPASSWD: /usr/sbin/ipmi-sensors",
-          "${user} ALL = NOPASSWD: /usr/sbin/ipmi-dcmi",
-          "${user} ALL = NOPASSWD: /usr/sbin/ipmi-raw",
-          "${user} ALL = NOPASSWD: /usr/sbin/bmc-info",
-          "${user} ALL = NOPASSWD: /usr/sbin/ipmi-chassis",
-          "${user} ALL = NOPASSWD: /usr/sbin/ipmi-sel",
+        "${user} ALL = NOPASSWD: /usr/sbin/ipmimonitoring",
+        "${user} ALL = NOPASSWD: /usr/sbin/ipmi-sensors",
+        "${user} ALL = NOPASSWD: /usr/sbin/ipmi-dcmi",
+        "${user} ALL = NOPASSWD: /usr/sbin/ipmi-raw",
+        "${user} ALL = NOPASSWD: /usr/sbin/bmc-info",
+        "${user} ALL = NOPASSWD: /usr/sbin/ipmi-chassis",
+        "${user} ALL = NOPASSWD: /usr/sbin/ipmi-sel",
       ], "\n"),
       sudo_file_name => $service_name,
     }
@@ -143,8 +144,8 @@ class prometheus::ipmi_exporter (
       group   => $group,
       mode    => '0750',
       content => join([
-          '#!/bin/bash',
-          'sudo /usr/sbin/$(basename $0) "$@"',
+        '#!/bin/bash',
+        'sudo /usr/sbin/$(basename $0) "$@"',
       ], "\n"),
     }
 
@@ -172,9 +173,9 @@ class prometheus::ipmi_exporter (
   }
 
   $options = join([
-      "--config.file=${config_file}",
-      $extra_options,
-      $unprivileged_option,
+    "--config.file=${config_file}",
+    $extra_options,
+    $unprivileged_option,
   ], ' ')
 
   prometheus::daemon { $service_name:

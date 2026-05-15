@@ -5,7 +5,7 @@
 # @param extra_groups Extra groups to add the binary user to
 # @param extra_options Extra options added to the startup command
 # @param group Group under which the binary is running
-# @param init_style Service startup scripts style (e.g. rc, upstart or systemd)
+# @param init_style Service startup scripts style (e.g. rc or systemd)
 # @param install_method Installation method: url or package (only url is supported currently)
 # @param manage_group Whether to create a group for or rely on external code for that
 # @param manage_service Should puppet manage the service?
@@ -33,6 +33,7 @@ class prometheus::wireguard_exporter (
   String[1] $package_ensure = 'installed',
   String[1] $package_name = 'prometheus-wireguard-exporter',
   String[1] $user = 'wireguard_exporter',
+  # renovate: depName=MindFlavor/prometheus_wireguard_exporter
   String[1] $version = '3.6.6',
   Boolean $purge_config_dir = true,
   Boolean $restart_on_change = true,
@@ -131,7 +132,7 @@ class prometheus::wireguard_exporter (
 
   if empty($web_config_content) {
     file { $web_config_file:
-      ensure  => absent,
+      ensure => absent,
     }
 
     $web_config = ''

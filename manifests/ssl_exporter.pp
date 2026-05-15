@@ -20,7 +20,7 @@
 # @param group
 #  Group under which the binary is running
 # @param init_style
-#  Service startup scripts style (e.g. rc, upstart or systemd)
+#  Service startup scripts style (e.g. rc or systemd)
 # @param install_method
 #  Installation method: url or package (only url is supported currently)
 # @param manage_group
@@ -59,7 +59,8 @@ class prometheus::ssl_exporter (
   Stdlib::Absolutepath $config_file                          = '/etc/ssl_exporter.yaml',
   String[1] $package_name                                    = 'ssl_exporter',
   String $download_extension                                 = 'tar.gz',
-  String[1] $version                                         = '2.2.1',
+  # renovate: depName=ribbybibby/ssl_exporter
+  String[1] $version                                         = '2.4.3',
   String[1] $package_ensure                                  = 'latest',
   String[1] $user                                            = 'ssl-exporter',
   String[1] $group                                           = 'ssl-exporter',
@@ -108,8 +109,8 @@ class prometheus::ssl_exporter (
   }
 
   $options = join([
-      "--config.file=${config_file}",
-      $extra_options,
+    "--config.file=${config_file}",
+    $extra_options,
   ], ' ')
 
   # SSL exporter is not packaged into a directory

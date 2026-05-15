@@ -25,7 +25,7 @@
 # @param group
 #  Group under which the binary is running
 # @param init_style
-#  Service startup scripts style (e.g. rc, upstart or systemd)
+#  Service startup scripts style (e.g. rc or systemd)
 # @param install_method
 #  Installation method: url or package (only url is supported currently)
 # @param manage_group
@@ -66,15 +66,19 @@
 #  Path of file where the web-config will be saved to
 # @param web_config_content
 #  Unless empty the content of the web-config yaml which will handed over as option to the exporter
+# @param scrape_port
+#  Scrape port for configuring scrape targets on the prometheus server via exported `prometheus::scrape_job` resources
+#  If changed from default 9100 the option `--web.listen-address=':${scrape_port}'` will be added to the command line arguments
 class prometheus::node_exporter (
-  String $download_extension,
-  Prometheus::Uri $download_url_base,
-  Array[String] $extra_groups,
-  String[1] $group,
-  String[1] $package_ensure,
-  String[1] $package_name,
-  String[1] $user,
-  String[1] $version,
+  String $download_extension = 'tar.gz',
+  Prometheus::Uri $download_url_base = 'https://github.com/prometheus/node_exporter/releases',
+  Array[String] $extra_groups = [],
+  String[1] $group = 'node-exporter',
+  String[1] $package_ensure = 'latest',
+  String[1] $package_name = 'node_exporter',
+  String[1] $user = 'node-exporter',
+  # renovate: depName=prometheus/node_exporter
+  String[1] $version                                         = '1.10.2',
   Boolean $purge_config_dir                                  = true,
   Boolean $restart_on_change                                 = true,
   Boolean $service_enable                                    = true,
@@ -156,11 +160,17 @@ class prometheus::node_exporter (
     }
   }
 
+  if $scrape_port != 9100 {
+    $listen_address = "--web.listen-address=':${scrape_port}'"
+  } else {
+    $listen_address = ''
+  }
   $options = [
     $extra_options,
     $cmd_collectors_enable.join(' '),
     $cmd_collectors_disable.join(' '),
     $_web_config,
+    $listen_address,
   ].filter |$x| { !$x.empty }.join(' ')
 
   prometheus::daemon { $service_name:

@@ -1,92 +1,52 @@
 ---
+# Managed by modulesync - DO NOT EDIT
+# https://voxpupuli.org/docs/updating-files-managed-with-modulesync/
+
 name: CI
 
-on: pull_request
+# yamllint disable-line rule:truthy
+on:
+  pull_request: {}
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      beaker_staging_url:
+        description: |-
+          URL to a staging Server to test unreleased packages.
+          We will append the version to the Server and assume all packages are in the same directory.
+          Only supported for AIO packages.
+        required: false
+        type: string
+        default: 'https://artifacts.voxpupuli.org/openvox-agent'
+      beaker_collection:
+        description: |-
+          When set to staging, we will download the packages from staging_url.
+          Otherwise we will use the official repos. Supported values: puppet7, puppet8, openvox7, openvox8, staging.
+          When unset, we will generate a list of supported collections based on metadata.json.
+        required: false
+        type: string
+      beaker_staging_version:
+        description: |-
+          The package version we want to test.
+          Only used for beaker_collection = staging
+        required: false
+        type: string
 
 concurrency:
   group: ${{ github.ref_name }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
-  setup_matrix:
-    name: 'Setup Test Matrix'
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-    outputs:
-      puppet_unit_test_matrix: ${{ steps.get-outputs.outputs.puppet_unit_test_matrix }}
-      github_action_test_matrix: ${{ steps.get-outputs.outputs.github_action_test_matrix }}
-    env:
-      BUNDLE_WITHOUT: development:system_tests:release
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.0'
-          bundler-cache: true
-      - name: Run static validations
-        run: bundle exec rake validate lint check
-      - name: Run rake rubocop
-        run: bundle exec rake rubocop
-      - name: Setup Test Matrix
-        id: get-outputs
-        run: bundle exec metadata2gha --use-fqdn --pidfile-workaround false
-
-  unit:
-    needs: setup_matrix
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{fromJson(needs.setup_matrix.outputs.puppet_unit_test_matrix)}}
-    env:
-      BUNDLE_WITHOUT: development:system_tests:release
-      PUPPET_VERSION: "~> ${{ matrix.puppet }}.0"
-    name: Puppet ${{ matrix.puppet }} (Ruby ${{ matrix.ruby }})
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          bundler-cache: true
-      - name: Run tests
-        run: bundle exec rake parallel_spec
-
-  acceptance:
-    needs: setup_matrix
-    runs-on: ubuntu-20.04
-    env:
-      BUNDLE_WITHOUT: development:test:release
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{fromJson(needs.setup_matrix.outputs.github_action_test_matrix)}}
-    name: ${{ matrix.puppet.name }} - ${{ matrix.setfile.name }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.0'
-          bundler-cache: true
-      - name: Start squid
-        run: ./scripts/start-squid.sh
-      - name: Run tests
-        run: bundle exec rake beaker
-        env:
-          BEAKER_PUPPET_COLLECTION: ${{ matrix.puppet.collection }}
-          BEAKER_setfile: ${{ matrix.setfile.value }}
-      - name: squid logs
-        run: docker logs squid --tail 50
-        if: always()
-
-  tests:
-    needs:
-      - unit
-      - acceptance
-    runs-on: ubuntu-latest
-    name: Test suite
-    steps:
-      - run: echo Test suite completed
+  puppet:
+    name: Puppet
+    uses: voxpupuli/gha-puppet/.github/workflows/beaker.yml@v4
+    with:
+      beaker_staging_url: ${{ inputs.beaker_staging_url }}
+      beaker_collection: ${{ inputs.beaker_collection }}
+      beaker_staging_version: ${{ inputs.beaker_staging_version }}

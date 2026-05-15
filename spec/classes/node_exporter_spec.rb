@@ -10,13 +10,17 @@ describe 'prometheus::node_exporter' do
       end
 
       context 'without parameters' do
+        let(:version) { catalogue.resource('Class[prometheus::node_exporter]').parameters[:version] }
+
         it { is_expected.to compile.with_all_deps }
         it { is_expected.to contain_class('prometheus') }
 
         if facts[:os]['name'] == 'Archlinux'
           it { is_expected.not_to contain_user('node-exporter') }
           it { is_expected.not_to contain_group('node-exporter') }
-          it { is_expected.not_to contain_file('/opt/node_exporter-1.0.1.linux-amd64/node_exporter') }
+
+          it { is_expected.not_to contain_file("/opt/node_exporter-#{version}.linux-amd64/node_exporter") }
+
           it { is_expected.not_to contain_file('/usr/local/bin/node_exporter') }
           it { is_expected.to contain_package('prometheus-node-exporter') }
           it { is_expected.not_to contain_systemd__unit_file('node_exporter.service') }
@@ -25,7 +29,8 @@ describe 'prometheus::node_exporter' do
         else
           it { is_expected.to contain_user('node-exporter') }
           it { is_expected.to contain_group('node-exporter') }
-          it { is_expected.to contain_file('/opt/node_exporter-1.0.1.linux-amd64/node_exporter') }
+          it { is_expected.to contain_file("/opt/node_exporter-#{version}.linux-amd64/node_exporter") }
+
           it { is_expected.to contain_file('/usr/local/bin/node_exporter') }
           it { is_expected.to contain_service('node_exporter') }
           it { is_expected.to contain_prometheus__daemon('node_exporter').with(options: '') }
@@ -52,12 +57,13 @@ describe 'prometheus::node_exporter' do
             collectors_disable: %w[baz qux],
             init_style: 'systemd',
             service_name: 'node_exporter',
-            install_method: 'url'
+            install_method: 'url',
           }
         end
+        let(:version) { catalogue.resource('Class[prometheus::node_exporter]').parameters[:version] }
 
         it { is_expected.to compile.with_all_deps }
-        it { is_expected.to contain_archive('/tmp/node_exporter-1.0.1.tar.gz') }
+        it { is_expected.to contain_archive("/tmp/node_exporter-#{version}.tar.gz") }
         it { is_expected.to contain_prometheus__daemon('node_exporter').with(options: '--collector.foo --collector.bar --no-collector.baz --no-collector.qux') }
 
         if facts[:os]['name'] != 'Archlinux'
@@ -73,7 +79,7 @@ describe 'prometheus::node_exporter' do
             collectors_disable: %w[baz qux],
             extra_options: '--path.procfs /host/proc --path.sysfs /host/sys',
             service_name: 'node_exporter',
-            install_method: 'url'
+            install_method: 'url',
           }
         end
 
@@ -84,21 +90,23 @@ describe 'prometheus::node_exporter' do
       context 'with version specified' do
         let(:params) do
           {
-            version: '0.13.0',
             arch: 'amd64',
             os: 'linux',
             bin_dir: '/usr/local/bin',
             service_name: 'node_exporter',
-            install_method: 'url'
+            install_method: 'url',
+            package_name: 'node_exporter', # reuired to override defaults for Archlinux
+            bin_name: 'node_exporter', # reuired to override defaults for Archlinux
           }
         end
+        let(:version) { catalogue.resource('Class[prometheus::node_exporter]').parameters[:version] }
 
         it { is_expected.to compile.with_all_deps }
-        it { is_expected.to contain_archive('/tmp/node_exporter-0.13.0.tar.gz') }
-        it { is_expected.to contain_file('/opt/node_exporter-0.13.0.linux-amd64/node_exporter') }
+        it { is_expected.to contain_archive("/tmp/node_exporter-#{version}.tar.gz") }
+        it { is_expected.to contain_file("/opt/node_exporter-#{version}.linux-amd64/node_exporter") }
 
         describe 'install correct binary' do
-          it { is_expected.to contain_file('/usr/local/bin/node_exporter').with('target' => '/opt/node_exporter-0.13.0.linux-amd64/node_exporter') }
+          it { is_expected.to contain_file('/usr/local/bin/node_exporter').with('target' => "/opt/node_exporter-#{version}.linux-amd64/node_exporter") }
         end
       end
 
@@ -107,7 +115,7 @@ describe 'prometheus::node_exporter' do
           {
             install_method: 'url',
             download_extension: '',
-            service_name: 'node_exporter'
+            service_name: 'node_exporter',
           }
         end
 
@@ -132,9 +140,9 @@ describe 'prometheus::node_exporter' do
             web_config_content: {
               tls_server_config: {
                 cert_file: '/etc/node_exporter/foo.cert',
-                key_file: '/etc/node_exporter/foo.key'
-              }
-            }
+                key_file: '/etc/node_exporter/foo.key',
+              },
+            },
           }
         end
 
@@ -155,9 +163,9 @@ describe 'prometheus::node_exporter' do
             web_config_content: {
               tls_server_config: {
                 cert_file: '/etc/node_exporter/foo.cert',
-                key_file: '/etc/node_exporter/foo.key'
-              }
-            }
+                key_file: '/etc/node_exporter/foo.key',
+              },
+            },
           }
         end
 
@@ -178,9 +186,9 @@ describe 'prometheus::node_exporter' do
             web_config_content: {
               tls_server_config: {
                 cert_file: '/etc/node_exporter/foo.cert',
-                key_file: '/etc/node_exporter/foo.key'
-              }
-            }
+                key_file: '/etc/node_exporter/foo.key',
+              },
+            },
           }
         end
 
@@ -191,6 +199,22 @@ describe 'prometheus::node_exporter' do
           it { is_expected.to contain_prometheus__daemon('prometheus-node-exporter').with(options: '--web.config.file=/etc/node_exporter_web-config.yml') }
         else
           it { is_expected.to contain_prometheus__daemon('node_exporter').with(options: '--web.config.file=/etc/node_exporter_web-config.yml') }
+        end
+      end
+
+      context 'with non default scrape port' do
+        let(:params) do
+          {
+            scrape_port: 9101,
+          }
+        end
+
+        it { is_expected.to compile.with_all_deps }
+
+        if facts[:os]['name'] == 'Archlinux'
+          it { is_expected.to contain_prometheus__daemon('prometheus-node-exporter').with(options: '--web.listen-address=\':9101\'') }
+        else
+          it { is_expected.to contain_prometheus__daemon('node_exporter').with(options: '--web.listen-address=\':9101\'') }
         end
       end
     end

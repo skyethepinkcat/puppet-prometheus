@@ -18,7 +18,7 @@
 # @param group
 #  Group under which the binary is running
 # @param init_style
-#  Service startup scripts style (e.g. rc, upstart or systemd)
+#  Service startup scripts style (e.g. rc or systemd)
 # @param install_method
 #  Installation method: url or package (only url is supported currently)
 # @param manage_group
@@ -59,6 +59,10 @@
 #  The binary release version
 # @param config_mode
 #  The permissions of the configuration files
+# @param env_vars
+#  hash with custom environment variables thats passed to the exporter via init script / unit file
+# @param env_file_path
+#  The path to the file with the environmetn variable that is read from the init script/systemd unit
 # @param proxy_server
 #  Optional proxy server, with port number if needed. ie: https://example.com:8080
 # @param proxy_type
@@ -88,7 +92,8 @@ class prometheus::blackbox_exporter (
   String[1] $package_ensure = 'latest',
   String[1] $package_name = 'blackbox_exporter',
   String[1] $user = 'blackbox-exporter',
-  String[1] $version = '0.17.0',
+  # renovate: depName=prometheus/blackbox_exporter
+  String[1] $version = '0.28.0',
   Boolean $restart_on_change                                 = true,
   Boolean $service_enable                                    = true,
   Stdlib::Ensure::Service $service_ensure                    = 'running',
@@ -110,6 +115,8 @@ class prometheus::blackbox_exporter (
   Stdlib::Port $scrape_port                                  = 9115,
   String[1] $scrape_job_name                                 = 'blackbox',
   Optional[Hash] $scrape_job_labels                          = undef,
+  Hash[String[1], Scalar] $env_vars                          = {},
+  Stdlib::Absolutepath $env_file_path                        = $prometheus::env_file_path,
   Optional[String[1]] $proxy_server                          = undef,
   Optional[Enum['none', 'http', 'https', 'ftp']] $proxy_type = undef,
   Stdlib::Absolutepath $web_config_file                      = '/etc/blackbox_exporter_web-config.yml',
@@ -188,6 +195,8 @@ class prometheus::blackbox_exporter (
     scrape_port        => $scrape_port,
     scrape_job_name    => $scrape_job_name,
     scrape_job_labels  => $scrape_job_labels,
+    env_vars           => $env_vars,
+    env_file_path      => $env_file_path,
     proxy_server       => $proxy_server,
     proxy_type         => $proxy_type,
   }

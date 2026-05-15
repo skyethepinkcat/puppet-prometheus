@@ -19,23 +19,7 @@ describe 'prometheus::alerts' do
 
       [
         {
-          version: '1.5.2',
-          alerts: [
-            {
-              'name' => 'alert_name',
-              'condition' => 'up == 0',
-              'timeduration' => '5min',
-              'labels' => [{ 'name' => 'severity', 'content' => 'woops' }],
-              'annotations' => [{ 'name' => 'summary', 'content' => 'did a woops {{ $labels.instance }}' }]
-            }
-          ],
-          # location: '/etc/prometheus/rules',
-          # user: 'prometheus',
-          # group: 'prometheus',
-          # bin_dir: '/usr/local/bin',
-        },
-        {
-          version: '2.0.0-rc.1',
+          version: '2.52.0',
           alerts: {
             groups: [
               {
@@ -47,18 +31,18 @@ describe 'prometheus::alerts' do
                     'for' => '5min',
                     'labels' => { 'severity' => 'woops' },
                     'annotations' => {
-                      'summary' => 'did a woops {{ $labels.instance }}'
-                    }
-                  }
-                ]
-              }
-            ]
+                      'summary' => 'did a woops {{ $labels.instance }}',
+                    },
+                  },
+                ],
+              },
+            ],
           },
           # location: '/etc/prometheus/rules',
           # user: 'prometheus',
           # group: 'prometheus',
           # bin_dir: '/usr/local/bin',
-        }
+        },
       ].each do |parameters|
         context "with parameters #{parameters}" do
           let(:params) do
@@ -73,7 +57,7 @@ describe 'prometheus::alerts' do
               'ensure' => 'file',
               'owner' => 'root',
               'group' => 'prometheus',
-              'content' => File.read(fixtures('files', "prometheus#{prom_major}.alert.rules"))
+              'content' => File.read(File.join('spec', 'fixtures', 'files', "prometheus#{prom_major}.alert.rules")),
             ) # .that_notifies('Class[prometheus::service_reload]')
           }
         end
