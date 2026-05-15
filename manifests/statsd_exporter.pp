@@ -86,6 +86,7 @@ class prometheus::statsd_exporter (
   Boolean $manage_group                                      = true,
   Boolean $manage_service                                    = true,
   Boolean $manage_user                                       = true,
+  Boolean $manage_mappings                                   = true,
   Optional[String[1]] $extra_options                         = undef,
   Optional[Prometheus::Uri] $download_url                    = undef,
   Boolean $export_scrape_job                                 = false,
@@ -108,7 +109,7 @@ class prometheus::statsd_exporter (
     default => undef,
   }
 
-  if $mappings {
+  if $manage_mappings {
     file { $mapping_config_path:
       ensure  => 'file',
       mode    => $config_mode,
